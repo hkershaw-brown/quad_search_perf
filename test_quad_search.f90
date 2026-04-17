@@ -38,6 +38,9 @@ call nc_get_variable_size(ncid, 'longitudes', N)
 Nx = N(1)
 Ny = N(2)
 
+print*, 'Nx = ', Nx
+print*, 'Ny = ', Ny
+
 allocate(TLON(Nx,Ny), TLAT(Nx,Ny))
 
 call nc_get_variable(ncid, 'longitudes', TLON)
