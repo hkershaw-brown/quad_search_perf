@@ -4,7 +4,6 @@ use mpi_utilities_mod, only : initialize_mpi_utilities, finalize_mpi_utilities
 use types_mod, only : r8
 use quad_utils_mod, only : quad_interp_handle, init_quad_interp, &
                            set_quad_coords, quad_lon_lat_locate, &
-                           quad_lon_lat_evaluate, quad_interp_handle, &
                            GRID_QUAD_FULLY_IRREGULAR, &
                            QUAD_LOCATED_CELL_CENTERS
 use netcdf_utilities_mod, only : nc_open_file_readonly, nc_get_variable_size, &
@@ -17,22 +16,50 @@ implicit none
 
 integer :: Nx, Ny, N(2)
 real(r8), allocatable :: TLON(:,:), TLAT(:,:)
-!logical, allocatable :: TMSK(:,:)
 integer :: lon_corner_index(4), lat_corner_index(4)
 integer :: lstatus
 type(quad_interp_handle) :: h
 real(r8) :: start
 integer :: i, num_reps
 real(r8), allocatable :: lon(:), lat(:)
-
+character(len=256) :: grid_file
+character(len=256) :: arg
+logical :: print_results
 
 type(random_seq_type) :: ran_seq
 integer :: ncid
 
 call initialize_mpi_utilities('test_quad_search')
 
+!------------------------------------------------------------
+! Parse command-line arguments:  [num_reps] [grid_file] [p]
+!   default num_reps      = 1000
+!   default grid_file     = 'irregular_grid.nc'
+!   'p' as third argument enables per-observation quad printing
+!------------------------------------------------------------
+num_reps     = 1000
+grid_file    = 'irregular_grid.nc'
+print_results = .false.
+
+if (command_argument_count() >= 1) then
+   call get_command_argument(1, arg)
+   read(arg, *) num_reps
+endif
+
+if (command_argument_count() >= 2) then
+   call get_command_argument(2, grid_file)
+endif
+
+if (command_argument_count() >= 3) then
+   call get_command_argument(3, arg)
+   if (trim(arg) == 'p') print_results = .true.
+endif
+
+print *, 'num_reps  = ', num_reps
+print *, 'grid_file = ', trim(grid_file)
+
 ! read grid
-ncid = nc_open_file_readonly('irregular_grid.nc')
+ncid = nc_open_file_readonly(trim(grid_file))
 
 call nc_get_variable_size(ncid, 'longitudes', N)
 Nx = N(1)
@@ -46,8 +73,7 @@ allocate(TLON(Nx,Ny), TLAT(Nx,Ny))
 call nc_get_variable(ncid, 'longitudes', TLON)
 call nc_get_variable(ncid, 'latitudes', TLAT)
 
-! need num_reps lon lat pairs to test the search.
-num_reps = 1000
+! generate num_reps random lon/lat pairs to test the search
 allocate(lon(num_reps), lat(num_reps))
 
 call init_random_seq(ran_seq, 12345)
@@ -68,13 +94,14 @@ call set_quad_coords(h, TLON, TLAT)
 
 start = mpi_wtime()
 do i = 1, num_reps
-   call quad_lon_lat_locate(h, lon(i), lat(i), lon_corner_index, lat_corner_index, lstatus) 
+   call quad_lon_lat_locate(h, lon(i), lat(i), lon_corner_index, lat_corner_index, lstatus)
 end do
 print*, 'locate time = ', mpi_wtime() - start
 
-! check it is the correct quad. 
-!print*, 'lon corner index = ', lon_corner_index
-!print*, 'lat corner index = ', lat_corner_index
+if (print_results) then
+   print*, 'lon corner index = ', lon_corner_index
+   print*, 'lat corner index = ', lat_corner_index
+endif 
 
 call finalize_mpi_utilities()
 
