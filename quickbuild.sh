@@ -12,7 +12,7 @@ LOCATION="threed_sphere"
 programs=(
 )
 
-serial_programs=(
+programs=(
 test_quad_search
 )
 
