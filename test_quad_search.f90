@@ -1,6 +1,7 @@
 program test_quad_search
 
-use mpi_utilities_mod, only : initialize_mpi_utilities, finalize_mpi_utilities
+use mpi_utilities_mod, only : initialize_mpi_utilities, finalize_mpi_utilities, &
+                              my_task_id
 use types_mod, only : r8
 use quad_utils_mod, only : quad_interp_handle, init_quad_interp, &
                            set_quad_coords, quad_lon_lat_locate, &
@@ -55,8 +56,11 @@ if (command_argument_count() >= 3) then
    if (trim(arg) == 'p') print_results = .true.
 endif
 
-print *, 'num_reps  = ', num_reps
-print *, 'grid_file = ', trim(grid_file)
+if (my_task_id() == 0) then
+   print *, 'Running test_quad_search with:'
+   print *, 'num_reps  = ', num_reps
+   print *, 'grid_file = ', trim(grid_file)
+endif
 
 ! read grid
 ncid = nc_open_file_readonly(trim(grid_file))
@@ -65,8 +69,10 @@ call nc_get_variable_size(ncid, 'longitudes', N)
 Nx = N(1)
 Ny = N(2)
 
-print*, 'Nx = ', Nx
-print*, 'Ny = ', Ny
+if (my_task_id() == 0) then
+   print*, 'Nx = ', Nx
+   print*, 'Ny = ', Ny
+endif
 
 allocate(TLON(Nx,Ny), TLAT(Nx,Ny))
 
@@ -96,9 +102,11 @@ start = mpi_wtime()
 do i = 1, num_reps
    call quad_lon_lat_locate(h, lon(i), lat(i), lon_corner_index, lat_corner_index, lstatus)
 end do
-print*, 'locate time = ', mpi_wtime() - start
+if (my_task_id() == 0) then
+   print*, 'locate time = ', mpi_wtime() - start
+endif
 
-if (print_results) then
+if (print_results .and. my_task_id() == 0) then
    print*, 'lon corner index = ', lon_corner_index
    print*, 'lat corner index = ', lat_corner_index
 endif 

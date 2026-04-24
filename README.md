@@ -11,15 +11,15 @@ e.g.
 ```
 brute_quad_utils_mod
 
-cp brute_quad_utils_mod quad_utila_mod.f90
+cp brute_quad_utils_mod quad_utils_mod.f90
 ./quickdbuild.sh
 ```
 
 Use original
 
 ```
-rm quad_utila_mod.f90
-quickbuild.sh
+rm quad_utils_mod.f90
+./quickdbuild.sh
 ```
 
 ## Memory usage
