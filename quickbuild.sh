@@ -2,7 +2,7 @@
 
 main() {
 
-export DART=/Users/hkershaw/DART/Bugs/quads/DART
+export DART=/Users/hkershaw/DART/Bugs/quads/DART.main
 source "$DART"/build_templates/buildfunctions.sh
 
 MODEL="none"

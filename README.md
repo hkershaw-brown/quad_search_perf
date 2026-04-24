@@ -22,6 +22,13 @@ rm quad_utils_mod.f90
 ./quickdbuild.sh
 ```
 
+two pass version
+
+```
+cp quad_utils_twopass quad_utils_mod.f90
+./quickbuild.sh
+
+```
 ## Memory usage
 
 On mac
