@@ -101,6 +101,7 @@ is_global  = .not. regional
 spans_zero = .not. regional
 pole       = .not. regional
 
+start = mpi_wtime()
 ! set up interp handle
 call init_quad_interp(GRID_QUAD_FULLY_IRREGULAR, Nx, Ny, &
                       QUAD_LOCATED_CELL_CENTERS,         &
@@ -108,6 +109,7 @@ call init_quad_interp(GRID_QUAD_FULLY_IRREGULAR, Nx, Ny, &
                       spans_lon_zero = spans_zero,       &
                       pole_wrap      = pole,             &
                       interp_handle  = h)
+print*, 'init time = ', mpi_wtime() - start
 call set_quad_coords(h, TLON, TLAT)
 
 ! optionally write coarse box data for plotting
@@ -120,6 +122,7 @@ endif
 ! or over the full globe for global
 allocate(lon(num_reps), lat(num_reps))
 
+start = mpi_wtime()
 call init_random_seq(ran_seq, 12345)
 if (regional) then
    do i = 1, num_reps
@@ -132,19 +135,24 @@ else
       lat(i) = random_uniform(ran_seq)*180.0_r8 - 90.0_r8
    end do
 endif
+print*, 'random number creation time = ', mpi_wtime() - start
 
 start = mpi_wtime()
 do i = 1, num_reps
    call quad_lon_lat_locate(h, lon(i), lat(i), lon_corner_index, lat_corner_index, lstatus)
+   if (print_results .and. my_task_id() == 0) then
+      print*, 'lon corner index = ', lon_corner_index
+      print*, 'lat corner index = ', lat_corner_index
+   endif
 end do
 if (my_task_id() == 0) then
    print*, 'locate time = ', mpi_wtime() - start
 endif
 
-if (print_results .and. my_task_id() == 0) then
-   print*, 'lon corner index = ', lon_corner_index
-   print*, 'lat corner index = ', lat_corner_index
-endif
+!if (print_results .and. my_task_id() == 0) then
+!   print*, 'lon corner index = ', lon_corner_index
+!   print*, 'lat corner index = ', lat_corner_index
+!endif
 
 call finalize_mpi_utilities()
 
