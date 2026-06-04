@@ -80,3 +80,51 @@ Program test_quad_search v11.22.0					 Program test_quad_search v11.22.0
           2624557598  cycles elapsed				|                 5436004588  cycles elapsed
            726862592  peak memory footprint			|                 6247118080  peak memory footprint
 ```
+
+# Results CSR vs main
+
+```
+./test_quad_search.main  100 regional_4500_5000.nc  p > main.out  
+./test_quad_search  100 regional_4500_5000.nc r p > csr.out
+```
+
+```diff
+(py-env) [hkershaw:runs]() > diff csr.out main.out 
+4,5c4,5
+<                  2026  6  4  8 32 59
+<  Program test_quad_search v11.24.0-3-g24d04cfdf-dirty
+---
+>                  2026  6  4  8 32 39
+>  Program test_quad_search v11.24.0-dirty
+17,24c17,26
+<  init time =    1.2169999999999959E-003
+<  PE 0: init_irreg_interp  two-pass: max candidates per coarse box =           25
+<  PE 0: init_irreg_interp  two-pass: min candidates per coarse box =            9
+<  PE 0: init_irreg_interp  two-pass: empty coarse boxes =            0  of      2812329
+<  PE 0: init_irreg_interp  two-pass: total coarse-index entries =     45616723
+<  PE 0: init_irreg_interp two-pass: mean candidates per coarse box =   16.2
+<  PE 0: init_irreg_interp  two-pass: boxes with >2x mean =            0  of      2812329
+<  random number creation time =    10.450315000000000     
+---
+>  init time =    6.1400000000000343E-004
+>  PE 0: init_irreg_interp  to determine (minimum) max_reg_list_num values for new grids ...
+>  PE 0: init_irreg_interp ...  interp_handle%ii%grid_num is           48
+>  PE 0: init_irreg_interp init_irreg_interp: max candidates per coarse box = 48
+>  PE 0: init_irreg_interp init_irreg_interp: min candidates per coarse box = 30
+>  PE 0: init_irreg_interp init_irreg_interp: empty coarse boxes = 0  of 810000
+>  PE 0: init_irreg_interp init_irreg_interp: total coarse-index entries = 32809050
+>  PE 0: init_irreg_interp init_irreg_interp: mean candidates per coarse box =   40.5
+>  PE 0: init_irreg_interp init_irreg_interp: boxes with >2x mean = 0  of 810000
+>  random number creation time =    10.543972000000000     
+225c227
+<  locate time =    3.8900000000019475E-004
+---
+>  locate time =    6.0099999999962961E-004
+229,230c231,232
+<                  2026  6  4  8 33 12
+<  Program test_quad_search v11.24.0-3-g24d04cfdf-dirty
+---
+>                  2026  6  4  8 32 51
+>  Program test_quad_search v11.24.0-dirty
+```
+
